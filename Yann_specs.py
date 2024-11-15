@@ -24,7 +24,7 @@ class User:
 
         """
         user_answer = input(f"Question : {card.text}\nVotre réponse : ")
-        correct_answer = True  # Cela doit être vérifié avec la réponse correcte
+        correct_answer = True # a encore définir
         if correct_answer:
             self.statistics.update_statistics(True)
         else:
