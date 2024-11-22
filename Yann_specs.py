@@ -8,9 +8,8 @@ class User:
         """
         Créer une instance de carte avec son texte et son image
 
-        PRE: texte lié a la carte
-             image liée à la carte 
-        POST: une instance de carte est créée
+        PRE: - 
+        POST: une instance de carte est créée et la retourne
         
         """
         return Card(text, image)
@@ -19,8 +18,9 @@ class User:
         """
         Permet de vérifier la réponse de l'utilisateur en fonction de la question de la carte
 
-        PRE: l'instance de carte
-        POST: la réponse correcte a la carte
+        PRE: -une instance de carte
+             -statistics doit avoir été créé
+        POST: retourne la réponse correcte de l'instance de carte
 
         """
         user_answer = input(f"Question : {card.text}\nVotre réponse : ")
@@ -34,8 +34,8 @@ class User:
     def display_statistics(self):
         """
         Affiche les statistiques du joueur
-        PRE: pas de parametres
-        POST: ne renvoie rien mais affiche les données
+        PRE: statistics doit avoir été créé
+        POST: affiche les données statistiques du joueur
         """
         self.statistics.display_stats()
 
@@ -48,8 +48,8 @@ class Statistics:
         """
         Actualise les données en fonction de si l'utilisateur connait la carte ou non
 
-        PRE: parametre known booléen introduit par l'utilisateur
-        POST: ne renvoie rien mais actualise self.total_known_cards/self.total_unknown_cards
+        PRE: -
+        POST: actualise self.total_known_cards/self.total_unknown_cards
 
         """
         if known:
@@ -61,8 +61,8 @@ class Statistics:
         """
         Affiche le nombre de cartes connues et pas connues
 
-        PRE: pas de parametres
-        POST: ne renvoie rien mais affiche les données
+        PRE: -
+        POST: affiche le nombre de cartes connues et inconnues
         """
         print(f"Cartes connues: {self.total_known_cards}")
         print(f"Cartes inconnues: {self.total_unknown_cards}")
