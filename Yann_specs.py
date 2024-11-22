@@ -18,7 +18,7 @@ class User:
         """
         Permet de vérifier la réponse de l'utilisateur en fonction de la question de la carte
 
-        PRE: -une instance de carte
+        PRE: -card est une instance de carte
              -statistics doit avoir été créé
         POST: retourne la réponse correcte de l'instance de carte
 
