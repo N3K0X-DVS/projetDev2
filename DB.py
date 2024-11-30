@@ -66,13 +66,12 @@ def ajouter_fiche(question, reponse, theme_nom):
     :param reponse: La réponse à la question
     :param theme_nom: Le nom du thème associé
     """
-    try:
     # Récupérer ou créer l'ID du thème
-        theme_id = ajouter_theme(theme_nom)
+    theme_id = ajouter_theme(theme_nom)
 
-        conn = sqlite3.connect('fiches_thematiques.db')
-        curseur = conn.cursor()
-
+    conn = sqlite3.connect('fiches_thematiques.db')
+    curseur = conn.cursor()
+    try:
         curseur.execute('''
         INSERT INTO fiche (question, reponse, theme_id) 
         VALUES (?, ?, ?)
@@ -83,6 +82,8 @@ def ajouter_fiche(question, reponse, theme_nom):
     except sqlite3.IntegrityError:
         print(f"{question} \n already in table with answer {reponse}\n")
 
+    finally:
+        conn.close()
 
 def recuperer_fiches_par_theme(theme_nom):
     """
