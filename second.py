@@ -22,7 +22,7 @@ def creer_base_de_donnees():
     curseur.execute('''
     CREATE TABLE IF NOT EXISTS fiche (
         id_question INTEGER PRIMARY KEY AUTOINCREMENT,
-        question TEXT NOT NULL,
+        question TEXT NOT NULL UNIQUE,
         reponse TEXT NOT NULL,
         theme_id INTEGER,
         FOREIGN KEY(theme_id) REFERENCES theme(theme_id)
@@ -45,7 +45,7 @@ def ajouter_theme(theme_nom):
     curseur = conn.cursor()
 
     try:
-        curseur.execute('INSERT INTO theme (theme_nom) VALUES (?)', (theme_nom,))
+        curseur.execute('INSERT INTO theme (theme_nom)  VALUES (?)  ', (theme_nom,))
         theme_id = curseur.lastrowid
         conn.commit()
         return theme_id
@@ -66,19 +66,22 @@ def ajouter_fiche(question, reponse, theme_nom):
     :param reponse: La réponse à la question
     :param theme_nom: Le nom du thème associé
     """
+    try:
     # Récupérer ou créer l'ID du thème
-    theme_id = ajouter_theme(theme_nom)
+        theme_id = ajouter_theme(theme_nom)
 
-    conn = sqlite3.connect('fiches_thematiques.db')
-    curseur = conn.cursor()
+        conn = sqlite3.connect('fiches_thematiques.db')
+        curseur = conn.cursor()
 
-    curseur.execute('''
-    INSERT INTO fiche (question, reponse, theme_id) 
-    VALUES (?, ?, ?)
-    ''', (question, reponse, theme_id))
+        curseur.execute('''
+        INSERT INTO fiche (question, reponse, theme_id) 
+        VALUES (?, ?, ?)
+        ''', (question, reponse, theme_id))
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+    except sqlite3.IntegrityError:
+        print(f"{question} already in table with answer {reponse}")
 
 
 def recuperer_fiches_par_theme(theme_nom):
