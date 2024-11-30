@@ -110,7 +110,7 @@ def recuperer_all_info_fiches():
     """
     Récupère toutes les fiches d'un thème donné
 
-    :param theme_nom: Nom du thème
+    :PRE: None
     :return: Liste de tuples (id_question, question, reponse)
     """
     conn = sqlite3.connect('fiches_thematiques.db')
@@ -154,8 +154,6 @@ def main():
     print("Fiches du thème 'Géographie':")
     for fiche in recuperer_fiches_par_theme("Géographie"):
         print(f"ID: {fiche[0]}, Question: {fiche[1]}, Réponse: {fiche[2]}, theme:{fiche[3]}\n")
-    
-
 
 
 if __name__ == "__main__":
