@@ -81,7 +81,7 @@ def ajouter_fiche(question, reponse, theme_nom):
         conn.commit()
         conn.close()
     except sqlite3.IntegrityError:
-        print(f"{question} already in table with answer {reponse}")
+        print(f"{question} \n already in table with answer {reponse}\n")
 
 
 def recuperer_fiches_par_theme(theme_nom):
@@ -106,6 +106,27 @@ def recuperer_fiches_par_theme(theme_nom):
 
     return fiches
 
+def recuperer_all_info_fiches():
+    """
+    Récupère toutes les fiches d'un thème donné
+
+    :param theme_nom: Nom du thème
+    :return: Liste de tuples (id_question, question, reponse)
+    """
+    conn = sqlite3.connect('fiches_thematiques.db')
+    curseur = conn.cursor()
+
+    curseur.execute('''
+    SELECT fiche.id_question, fiche.question, fiche.reponse, theme.theme_id, theme.theme_nom
+    FROM fiche 
+    JOIN theme ON fiche.theme_id = theme.theme_id 
+    ''')
+
+    fiches = curseur.fetchall()
+    conn.close()
+    print(f"{fiches}\n")
+    return fiches
+
 
 def main():
     # Création de la base de données
@@ -125,10 +146,16 @@ def main():
         "Art"
     )
 
+    for fiche in recuperer_all_info_fiches():
+        print(f"ID-Q: {fiche[0]}, Question: {fiche[1]}, Réponse: {fiche[2]}, themeId: {fiche[3]}, theme-nom: {fiche[4]}\n")
+
+
     # Récupération des fiches par thème
     print("Fiches du thème 'Géographie':")
     for fiche in recuperer_fiches_par_theme("Géographie"):
-        print(f"ID: {fiche[0]}, Question: {fiche[1]}, Réponse: {fiche[2]}, theme:{fiche[3]}")
+        print(f"ID: {fiche[0]}, Question: {fiche[1]}, Réponse: {fiche[2]}, theme:{fiche[3]}\n")
+    
+
 
 
 if __name__ == "__main__":
