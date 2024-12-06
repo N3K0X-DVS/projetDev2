@@ -106,6 +106,22 @@ def recuperer_fiches_par_theme(theme_nom):
     conn.close()
 
     return fiches
+def recuperer_question_reponse():
+    conn = sqlite3.connect('fiches_thematiques.db')
+    curseur = conn.cursor()
+
+    curseur.execute('''
+    SELECT fiche.question, fiche.reponse
+    FROM fiche
+    ''')
+
+    fiches = curseur.fetchall()
+    conn.close()
+
+    fiches_dict = dict(fiches)
+    print(fiches_dict)
+    #print(f"question et reponse: {fiches}\n")
+    return fiches_dict
 
 def recuperer_all_info_fiches():
     """
@@ -155,6 +171,7 @@ def main():
     print("Fiches du thème 'Géographie':")
     for fiche in recuperer_fiches_par_theme("Géographie"):
         print(f"ID: {fiche[0]}, Question: {fiche[1]}, Réponse: {fiche[2]}, theme:{fiche[3]}\n")
+    recuperer_question_reponse()
 
 
 if __name__ == "__main__":
