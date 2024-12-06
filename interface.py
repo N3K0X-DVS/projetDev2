@@ -15,7 +15,7 @@ is_question_shown = True
 # Création de la fenêtre principale
 window = tk.Tk()
 window.title("Application de Flashcards")
-window.geometry("800x600")  # Taille de la fenêtre
+window.geometry("800x600")
 
 # Création du cadre pour la flashcard
 card_frame = tk.Frame(window, bg="lightblue", bd=5, relief="ridge")
