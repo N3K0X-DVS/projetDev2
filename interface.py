@@ -188,9 +188,11 @@ class FlashcardApp:
         
         themes = set(fiche[4] for fiche in recuperer_all_info_fiches())  # Récupère les thèmes existants
         themes.add("Tous")  # Ajoute l'option "Tous" pour charger toutes les cartes
+          # Trier les thèmes par ordre alphabétique insensible à la casse
+        themes_sorted = sorted(themes, key=lambda x: x.lower())  # Trier sans tenir compte de la casse
         theme_var = tk.StringVar()
         
-        theme_dropdown = ttk.Combobox(theme_window, textvariable=theme_var, values=list(themes))
+        theme_dropdown = ttk.Combobox(theme_window, textvariable=theme_var, values=list(themes_sorted))
         theme_dropdown.pack(pady=10)
         
         def load_theme():
