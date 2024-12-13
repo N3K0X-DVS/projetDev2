@@ -1,24 +1,28 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from DB import recuperer_all_info_fiches, recuperer_fiches_par_theme, ajouter_fiche
-import random
+
+from flashcard_logic import FlashcardLogic
+
 
 class FlashcardApp:
     def __init__(self):
+        # Create the logic instance
+        self.logic = FlashcardLogic()
+
+        # Create the main window
         self.window = tk.Tk()
         self.window.title("FlashLearn")
         self.window.geometry("1000x700")
         self.window.configure(bg="#f0f4f8")
 
-        self.unknown_flashcards = []
-        self.known_flashcards = []
-        self.current_card_index = 0
+        # UI-specific state variables
         self.is_answer_shown = False
         self.test_mode = False
         self.test_questions = []
         self.current_question_index = 0
         self.correct_answers = 0
 
+        # Create the UI
         self.create_ui()
 
     def create_ui(self):
@@ -27,34 +31,34 @@ class FlashcardApp:
         main_frame.pack(expand=True, fill="both", padx=20, pady=20)
 
         # Titre de l'application
-        title_label = tk.Label(main_frame, text="FlashLearn", 
-                                font=("Arial", 24, "bold"), 
-                                bg="#f0f4f8", 
-                                fg="#2c3e50")
+        title_label = tk.Label(main_frame, text="FlashLearn",
+                               font=("Arial", 24, "bold"),
+                               bg="#f0f4f8",
+                               fg="#2c3e50")
         title_label.pack(pady=10)
 
         # Statistiques en haut
         stats_frame = tk.Frame(main_frame, bg="#f0f4f8")
         stats_frame.pack(fill="x", pady=10)
 
-        self.stats_label = tk.Label(stats_frame, 
-                                    text="0/0 cartes", 
-                                    font=("Arial", 12), 
+        self.stats_label = tk.Label(stats_frame,
+                                    text="0/0 cartes",
+                                    font=("Arial", 12),
                                     bg="#f0f4f8")
         self.stats_label.pack()
 
         # Carte de flashcard
-        self.card_frame = tk.Frame(main_frame, 
-                                   bg="white", 
-                                   highlightbackground="#a0a0a0", 
-                                   highlightthickness=1, 
+        self.card_frame = tk.Frame(main_frame,
+                                   bg="white",
+                                   highlightbackground="#a0a0a0",
+                                   highlightthickness=1,
                                    bd=0)
         self.card_frame.pack(expand=True, fill="both", pady=20)
 
-        self.card_text = tk.Label(self.card_frame, 
-                                  text="Commencez à étudier", 
-                                  font=("Arial", 24, "bold"), 
-                                  bg="white", 
+        self.card_text = tk.Label(self.card_frame,
+                                  text="Commencez à étudier",
+                                  font=("Arial", 24, "bold"),
+                                  bg="white",
                                   wraplength=800)
         self.card_text.pack(expand=True, fill="both", padx=20, pady=20)
 
@@ -67,15 +71,15 @@ class FlashcardApp:
             ("Inconnu", self.mark_unknown, "red"),
             ("Montrer Réponse", self.toggle_answer, "orange"),
             ("Connu", self.mark_known, "green"),
-            ("Ajouter une carte", self.add_flashcard, "blue")  # Nouveau bouton pour ajouter une carte
+            ("Ajouter une carte", self.add_flashcard, "blue")
         ]
 
         for text, command, color in buttons:
-            btn = tk.Button(control_frame, 
-                            text=text, 
-                            command=command, 
-                            bg=color, 
-                            fg="white", 
+            btn = tk.Button(control_frame,
+                            text=text,
+                            command=command,
+                            bg=color,
+                            fg="white",
                             font=("Arial", 14))
             btn.pack(side="left", expand=True, padx=5)
 
@@ -94,37 +98,21 @@ class FlashcardApp:
         menubar.add_cascade(label="Test", menu=test_menu)
         test_menu.add_command(label="Passer le Test", command=self.start_test)
 
-    def charger_fiches(self, fiches=None):
-        if fiches is None:
-            fiches = recuperer_all_info_fiches()
-        
-        self.unknown_flashcards = [
-            {"question": fiche[1], "answer": fiche[2], "theme": fiche[4]} 
-            for fiche in fiches
-        ]
-        self.known_flashcards = []
-        self.current_card_index = 0
-        
-        if self.unknown_flashcards:
-            self.show_current_card()
-        else:
-            messagebox.showinfo("Information", "Aucune carte disponible")
-
     def show_current_card(self):
-        if not self.unknown_flashcards:
+        # Retrieve current flashcard from logic class
+        card = self.logic.get_current_card()
+        if card:
+            self.card_text.config(text=card["question"], fg="black")
+            self.is_answer_shown = False
+            self.update_stats()
+        else:
             self.show_end_screen()
-            return
-
-        card = self.unknown_flashcards[self.current_card_index]
-        self.card_text.config(text=card["question"], fg="black")
-        self.is_answer_shown = False
-        self.update_stats()
 
     def toggle_answer(self):
-        if not self.unknown_flashcards:
+        card = self.logic.get_current_card()
+        if not card:
             return
 
-        card = self.unknown_flashcards[self.current_card_index]
         if self.is_answer_shown:
             self.card_text.config(text=card["question"], fg="black")
             self.is_answer_shown = False
@@ -133,38 +121,23 @@ class FlashcardApp:
             self.is_answer_shown = True
 
     def mark_known(self):
-        if not self.unknown_flashcards:
-            return
-
-        card = self.unknown_flashcards.pop(self.current_card_index)
-        self.known_flashcards.append(card)
-        
-        # Ajuster l'index
-        if self.current_card_index >= len(self.unknown_flashcards):
-            self.current_card_index = 0
-
+        # Delegate to logic class
+        self.logic.mark_current_card_as_known()
         self.show_current_card()
 
     def mark_unknown(self):
-        if not self.unknown_flashcards:
-            return
-
-        card = self.unknown_flashcards[self.current_card_index]
-        # Déplacer à la fin de la liste
-        self.unknown_flashcards.append(self.unknown_flashcards.pop(self.current_card_index))
-        
+        # Delegate to logic class
+        self.logic.mark_current_card_as_unknown()
         self.show_current_card()
 
     def previous_card(self):
-        if not self.unknown_flashcards:
-            return
-
-        self.current_card_index = (self.current_card_index - 1) % len(self.unknown_flashcards)
+        # Delegate to logic class
+        self.logic.previous_card()
         self.show_current_card()
 
     def update_stats(self):
-        total = len(self.known_flashcards) + len(self.unknown_flashcards)
-        known = len(self.known_flashcards)
+        total = self.logic.get_total_cards()
+        known = self.logic.get_known_cards_count()
         stats_text = f"Cartes connues : {known}/{total}"
         self.stats_label.config(text=stats_text)
 
@@ -172,11 +145,12 @@ class FlashcardApp:
         end_window = tk.Toplevel(self.window)
         end_window.title("Étude terminée")
         end_window.geometry("400x300")
-        
+
         tk.Label(end_window, text="Félicitations !", font=("Arial", 20, "bold")).pack(pady=20)
         tk.Label(end_window, text="Vous avez terminé toutes les cartes.", font=("Arial", 14)).pack(pady=10)
-        
-        tk.Button(end_window, text="Recommencer", command=lambda: [self.charger_fiches(), end_window.destroy()]).pack(pady=10)
+
+        tk.Button(end_window, text="Recommencer", command=lambda: [self.load_cards(), end_window.destroy()]).pack(
+            pady=10)
         tk.Button(end_window, text="Fermer", command=end_window.destroy).pack(pady=10)
 
     def load_theme_dialog(self):
@@ -185,26 +159,19 @@ class FlashcardApp:
         theme_window.geometry("400x200")
 
         tk.Label(theme_window, text="Sélectionnez un thème :").pack(pady=10)
-        
-        themes = set(fiche[4] for fiche in recuperer_all_info_fiches())  # Récupère les thèmes existants
-        themes.add("Tous")  # Ajoute l'option "Tous" pour charger toutes les cartes
-          # Trier les thèmes par ordre alphabétique insensible à la casse
-        themes_sorted = sorted(themes, key=lambda x: x.lower())  # Trier sans tenir compte de la casse
+
+        themes = self.logic.get_all_themes()
         theme_var = tk.StringVar()
-        
-        theme_dropdown = ttk.Combobox(theme_window, textvariable=theme_var, values=list(themes_sorted))
+
+        theme_dropdown = ttk.Combobox(theme_window, textvariable=theme_var, values=list(themes))
         theme_dropdown.pack(pady=10)
-        
+
         def load_theme():
             selected_theme = theme_var.get()
-            if selected_theme == "Tous":
-                fiches_theme = recuperer_all_info_fiches()  # Charge toutes les cartes
-            else:
-                fiches_theme = [fiche for fiche in recuperer_all_info_fiches() if fiche[4] == selected_theme]
-            
-            self.charger_fiches(fiches_theme)
+            self.logic.load_theme(selected_theme)
+            self.show_current_card()
             theme_window.destroy()
-        
+
         tk.Button(theme_window, text="Charger", command=load_theme).pack(pady=10)
 
     def show_statistics(self):
@@ -212,25 +179,26 @@ class FlashcardApp:
         stats_window.title("Statistiques détaillées")
         stats_window.geometry("500x400")
 
-        total = len(self.known_flashcards) + len(self.unknown_flashcards)
-        known_percent = (len(self.known_flashcards) / total * 100) if total > 0 else 0
+        total = self.logic.get_total_cards()
+        known_count = self.logic.get_known_cards_count()
+        known_percent = (known_count / total * 100) if total > 0 else 0
 
         stats = [
             f"Total de cartes : {total}",
-            f"Cartes connues : {len(self.known_flashcards)} ({known_percent:.1f}%)",
-            f"Cartes restantes : {len(self.unknown_flashcards)}"
+            f"Cartes connues : {known_count} ({known_percent:.1f}%)",
+            f"Cartes restantes : {self.logic.get_unknown_cards_count()}"
         ]
 
         for stat in stats:
             tk.Label(stats_window, text=stat, font=("Arial", 14)).pack(pady=5)
 
     def start_test(self):
-        if len(self.unknown_flashcards) < 10:
+        if self.logic.get_total_cards() < 10:
             messagebox.showinfo("Test", "Il y a moins de 10 cartes disponibles pour passer le test.")
             return
-        
+
         self.test_mode = True
-        self.test_questions = random.sample(self.unknown_flashcards, 10)
+        self.test_questions = self.logic.prepare_test()
         self.current_question_index = 0
         self.correct_answers = 0
         self.ask_next_question()
@@ -239,7 +207,7 @@ class FlashcardApp:
         if self.current_question_index < len(self.test_questions):
             card = self.test_questions[self.current_question_index]
             question = card["question"]
-            
+
             # Créer une fenêtre de question
             self.test_window = tk.Toplevel(self.window)
             self.test_window.title(f"Question {self.current_question_index + 1}/10")
@@ -252,9 +220,9 @@ class FlashcardApp:
 
             def check_answer():
                 answer = answer_entry.get().strip()
-                if answer.lower() == card["answer"].lower():
+                if self.logic.check_test_answer(self.current_question_index, answer):
                     self.correct_answers += 1
-                
+
                 self.current_question_index += 1
                 self.test_window.destroy()
                 self.ask_next_question()
@@ -267,15 +235,11 @@ class FlashcardApp:
         result_window = tk.Toplevel(self.window)
         result_window.title("Résultats du Test")
         result_window.geometry("400x300")
-        
+
         score = self.correct_answers
         tk.Label(result_window, text=f"Vous avez {score} / 10 bonnes réponses.", font=("Arial", 18)).pack(pady=20)
         tk.Button(result_window, text="Fermer", command=result_window.destroy).pack(pady=20)
 
-    def run(self):
-        self.charger_fiches()
-        self.window.mainloop()
-     
     def add_flashcard(self):
         add_window = tk.Toplevel(self.window)
         add_window.title("Ajouter une carte")
@@ -290,8 +254,7 @@ class FlashcardApp:
         answer_entry.pack(pady=10)
 
         tk.Label(add_window, text="Sélectionnez un thème :").pack(pady=10)
-        themes = set(fiche[4] for fiche in recuperer_all_info_fiches())
-        themes.add("Tous")  # Ajoute "Tous" dans la liste des thèmes
+        themes = self.logic.get_all_themes()
         theme_var = tk.StringVar()
         theme_dropdown = ttk.Combobox(add_window, textvariable=theme_var, values=list(themes))
         theme_dropdown.pack(pady=10)
@@ -302,14 +265,27 @@ class FlashcardApp:
             theme = theme_var.get()
 
             if question and answer and theme:
-                ajouter_fiche(question, answer, theme)  # Enregistrement dans la base de données
-                messagebox.showinfo("Succès", "Carte ajoutée avec succès")
-                add_window.destroy()
-                self.charger_fiches()  # Recharge les cartes avec la nouvelle carte ajoutée
+                if self.logic.add_flashcard(question, answer, theme):
+                    messagebox.showinfo("Succès", "Carte ajoutée avec succès")
+                    add_window.destroy()
+                    self.load_cards()  # Recharge les cartes
+                else:
+                    messagebox.showwarning("Erreur", "Impossible d'ajouter la carte.")
             else:
                 messagebox.showwarning("Erreur", "Veuillez remplir tous les champs.")
 
         tk.Button(add_window, text="Ajouter", command=save_flashcard).pack(pady=10)
+
+    def load_cards(self):
+        # Delegate to logic class to load all cards
+        self.logic.load_all_cards()
+        self.show_current_card()
+
+    def run(self):
+        # Initial card load
+        self.load_cards()
+        self.window.mainloop()
+
 
 def run_app():
     app = FlashcardApp()
