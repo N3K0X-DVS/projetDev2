@@ -1,28 +1,17 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-
+from Carte import Carte
+from Theme import Theme
 from flashcard_logic import FlashcardLogic
 
 
 class FlashcardApp:
     def __init__(self):
-        # Create the logic instance
         self.logic = FlashcardLogic()
-
-        # Create the main window
         self.window = tk.Tk()
         self.window.title("FlashLearn")
         self.window.geometry("1000x700")
         self.window.configure(bg="#f0f4f8")
-
-        # UI-specific state variables
-        self.is_answer_shown = False
-        self.test_mode = False
-        self.test_questions = []
-        self.current_question_index = 0
-        self.correct_answers = 0
-
-        # Create the UI
         self.create_ui()
 
     def create_ui(self):
@@ -31,35 +20,19 @@ class FlashcardApp:
         main_frame.pack(expand=True, fill="both", padx=20, pady=20)
 
         # Titre de l'application
-        title_label = tk.Label(main_frame, text="FlashLearn",
-                               font=("Arial", 24, "bold"),
-                               bg="#f0f4f8",
-                               fg="#2c3e50")
+        title_label = tk.Label(main_frame, text="FlashLearn", font=("Arial", 24, "bold"), bg="#f0f4f8", fg="#2c3e50")
         title_label.pack(pady=10)
 
         # Statistiques en haut
         stats_frame = tk.Frame(main_frame, bg="#f0f4f8")
         stats_frame.pack(fill="x", pady=10)
-
-        self.stats_label = tk.Label(stats_frame,
-                                    text="0/0 cartes",
-                                    font=("Arial", 12),
-                                    bg="#f0f4f8")
+        self.stats_label = tk.Label(stats_frame, text="0/0 cartes", font=("Arial", 12), bg="#f0f4f8")
         self.stats_label.pack()
 
         # Carte de flashcard
-        self.card_frame = tk.Frame(main_frame,
-                                   bg="white",
-                                   highlightbackground="#a0a0a0",
-                                   highlightthickness=1,
-                                   bd=0)
+        self.card_frame = tk.Frame(main_frame, bg="white", highlightbackground="#a0a0a0", highlightthickness=1, bd=0)
         self.card_frame.pack(expand=True, fill="both", pady=20)
-
-        self.card_text = tk.Label(self.card_frame,
-                                  text="Commencez à étudier",
-                                  font=("Arial", 24, "bold"),
-                                  bg="white",
-                                  wraplength=800)
+        self.card_text = tk.Label(self.card_frame, text="Commencez à étudier", font=("Arial", 24, "bold"), bg="white", wraplength=800)
         self.card_text.pack(expand=True, fill="both", padx=20, pady=20)
 
         # Boutons de contrôle
@@ -75,12 +48,7 @@ class FlashcardApp:
         ]
 
         for text, command, color in buttons:
-            btn = tk.Button(control_frame,
-                            text=text,
-                            command=command,
-                            bg=color,
-                            fg="white",
-                            font=("Arial", 14))
+            btn = tk.Button(control_frame, text=text, command=command, bg=color, fg="white", font=("Arial", 14))
             btn.pack(side="left", expand=True, padx=5)
 
         # Menus
@@ -93,16 +61,11 @@ class FlashcardApp:
         theme_menu.add_command(label="Charger Thème", command=self.load_theme_dialog)
         theme_menu.add_command(label="Statistiques", command=self.show_statistics)
 
-        # Menu Test
-        test_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Test", menu=test_menu)
-        test_menu.add_command(label="Passer le Test", command=self.start_test)
-
     def show_current_card(self):
-        # Retrieve current flashcard from logic class
+        # Récupérer la carte actuelle depuis FlashcardLogic
         card = self.logic.get_current_card()
         if card:
-            self.card_text.config(text=card["question"], fg="black")
+            self.card_text.config(text=card.question, fg="black")
             self.is_answer_shown = False
             self.update_stats()
         else:
@@ -114,10 +77,10 @@ class FlashcardApp:
             return
 
         if self.is_answer_shown:
-            self.card_text.config(text=card["question"], fg="black")
+            self.card_text.config(text=card.question, fg="black")
             self.is_answer_shown = False
         else:
-            self.card_text.config(text=card["answer"], fg="blue")
+            self.card_text.config(text=card.answer, fg="blue")
             self.is_answer_shown = True
 
     def mark_known(self):
@@ -159,11 +122,10 @@ class FlashcardApp:
         theme_window.geometry("400x200")
 
         tk.Label(theme_window, text="Sélectionnez un thème :").pack(pady=10)
-
         themes = self.logic.get_all_themes()
         theme_var = tk.StringVar()
 
-        theme_dropdown = ttk.Combobox(theme_window, textvariable=theme_var, values=list(themes))
+        theme_dropdown = ttk.Combobox(theme_window, textvariable=theme_var, values=themes)
         theme_dropdown.pack(pady=10)
 
         def load_theme():
