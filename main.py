@@ -1,6 +1,7 @@
-from FCApp import FlashcardApp  # Assurez-vous que c'est la classe FlashcardApp
+from FCApp import FlashcardApp
 from DB import creer_base_de_donnees
 from consoleFC import *
+
 
 def main():
     import argparse
@@ -21,9 +22,11 @@ def main():
     elif args.mode == 'gui':
         run_app()
 
+
 def run_app():
     app = FlashcardApp()
     app.run()  # Lance l'application
+
 
 if __name__ == "__main__":
     creer_base_de_donnees()
